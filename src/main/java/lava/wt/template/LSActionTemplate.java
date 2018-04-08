@@ -7,9 +7,14 @@ import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.Iterator;
 
+import javax.servlet.http.HttpServletRequest;
+
+
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import lava.common.ReflectCommon;
+import lava.rt.common.ReflectCommon;
+import lava.wt.common.TextCommon;
 
 
 
@@ -18,18 +23,39 @@ import lava.common.ReflectCommon;
 public abstract class LSActionTemplate implements ActionTemplate{
 
 
-    protected Integer start=0, limit=Integer.MAX_VALUE ;
-    protected  String rowsName="rows",totalName="total",errTypeName="errtype",errMsgName="errmsg";
+    protected enum JsonAttr{
+    	msg,total,rows
+    }
+    
+    protected enum ParamAttr{
+    	start,limit,orderby,orderdir
+    }
+    
 
-    protected void setStart(Integer start) {
-        this.start = start;
+    protected int baseStart() {
+        return 0;
     }
 
-    protected void setLimit(Integer limit) {
-        this.limit = limit;
+    protected int baseLimit() {
+        return 100;
     }
 
 
+    protected int postStart(HttpServletRequest request) {
+        if(request.getParameterMap().containsKey("start")) {
+        	return Integer.parseInt(request.getParameter("start"));
+        }
+        return baseStart();
+    }
+
+    protected int postLimit(HttpServletRequest request) {
+    	if(request.getParameterMap().containsKey("limit")) {
+        	return Integer.parseInt(request.getParameter("limit"));
+        }
+        return baseLimit();
+    }
+
+    
 
     protected abstract String title();
 
@@ -101,7 +127,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
 			
 			html
 			//.append("<html><body>")
-			.append("<fieldset>easyui-datagrid html<pre>"+datagrid.toString()+"</pre>")
+			.append("<fieldset>easyui-datagrid html<pre>"+TextCommon.htmlWapper(datagrid.toString())+"</pre>")
 			.append("<fieldset>easyui-datagrid js<pre>"+datagrid_js.toString()+"</pre>")
 			//.append("</body></html>")
 			;
@@ -109,9 +135,44 @@ public abstract class LSActionTemplate implements ActionTemplate{
 	        return html.toString();
     }
     
+    public String html_table(JsonObject head,JsonArray rows,int total){
+    	 StringBuffer html=new StringBuffer("");
+	        
+	     String durl=this.getRequest().getRequestURI();
+	     
+	     StringBuffer table=new StringBuffer("<table border='1' >"),headTr=new StringBuffer("<tr>");
+	     
+	     for(Iterator<String> it=head.keySet().iterator();it.hasNext();) {
+	    	 String key=it.next();
+	    	 Object value=head.get(key);
+	    	 headTr.append("<th>"+value+"</th>");
+	     }
+	     headTr.append("</tr>");
+	     
+	     for(int i=0;i<rows.size();i++) {
+	    	 JsonObject row=rows.get(i).getAsJsonObject();
+	    	 StringBuffer rowTr=new StringBuffer("<tr>");
+	    	 for(Iterator<String> it=row.keySet().iterator();it.hasNext();) {
+		    	 String key=it.next();
+		    	 Object value=row.get(key)==null?"null":row.get(key);
+		    	 rowTr.append("<td>"+value+"</td>");
+		     }
+	    	 rowTr.append("</tr>");
+	    	 
+	    	 table.append(rowTr);
+	     }
+	     
+	     
+	     table.append("</table>");
+	     
+	     html.append(table);
+	     
+	     return html.toString();
+    }
+    
     public abstract String grid() throws IOException;
     
-    public abstract String count() throws IOException;
+    public abstract String total() throws IOException;
     
     
 }

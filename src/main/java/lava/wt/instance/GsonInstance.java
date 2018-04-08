@@ -1,4 +1,4 @@
-package lava.instance;
+package lava.wt.instance;
 
 import com.google.gson.Gson;
 
