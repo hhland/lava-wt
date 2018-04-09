@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import lava.rt.common.LangCommon;
 import lava.rt.common.ReflectCommon;
 import lava.wt.common.TextCommon;
 
@@ -78,13 +79,13 @@ public abstract class LSActionTemplate implements ActionTemplate{
 				String field=it.next();
 				int ct=head.get(field).getAsInt();
 				String editor="type:''validatebox'',options:'{'required:true '}'";
-				if(ReflectCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
+				if(LangCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
 					editor="type:''numberspinner'',options:'{'required:true,precision:0 '}'";
-				}else if(ReflectCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
+				}else if(LangCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
 					editor="type:''numberbox'',options:'{'required:true,precision:2 '}'";
-				}else if(ReflectCommon.isIn(ct, Types.DATE)){
+				}else if(LangCommon.isIn(ct, Types.DATE)){
 					editor="type:''datebox'',options:'{'required:true '}'";
-				}else if(ReflectCommon.isIn(ct, Types.TIMESTAMP)){
+				}else if(LangCommon.isIn(ct, Types.TIMESTAMP)){
 					editor="type:''datetimebox'',options:'{'required:true '}'"; 
 				}
 				datagrid.append(MessageFormat.format("\t<th data-options=\"field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}'\">"+field+"</th> \n",field));
@@ -98,13 +99,13 @@ public abstract class LSActionTemplate implements ActionTemplate{
 				String field=it.next();
 				int ct=head.get(field).getAsInt();
 				String editor="type:\"validatebox\",options:'{'required:true '}'";
-				if(ReflectCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
+				if(LangCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
 					editor="type:\"numberspinner\",options:'{'required:true,precision:0 '}'";
-				}else if(ReflectCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
+				}else if(LangCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
 					editor="type:\"numberbox\",options:'{'required:true,precision:2 '}'";
-				}else if(ReflectCommon.isIn(ct, Types.DATE)){
+				}else if(LangCommon.isIn(ct, Types.DATE)){
 					editor="type:\"datebox\",options:'{'required:true '}'";
-				}else if(ReflectCommon.isIn(ct, Types.TIMESTAMP)){
+				}else if(LangCommon.isIn(ct, Types.TIMESTAMP)){
 					editor="type:\"datetimebox\",options:'{'required:true '}'";
 				}
 				datagrid_js.append(MessageFormat.format("var col_{0}='{'field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}' '}'; \n",field));
