@@ -20,7 +20,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import lava.rt.instance.MethodInstance;
-import lava.rt.instance.SimpleDateFormatInstance;
+import lava.wt.instance.SimpleDateFormatInstance;
 import lava.wt.common.TextCommon;
 
 
@@ -232,7 +232,31 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        
 	        
 	    }
+		
+		
+		
 	    
+		@Override
+		public String rows() throws IOException {
+			// TODO Auto-generated method stub
+			HttpServletRequest request=getRequest();
+            int start=postStart(request),limit=postLimit(request);
+	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+	        JsonArray rows=null;
+				try {
+					rows = selectList(sql);
+					 for (int i = 0; i < rows.size(); i++) {
+			                rows.set(i, rowEach(i,rows.get(i).getAsJsonObject()));
+			         }
+			           
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		
+	           
+	        return rows.toString();
+		}
+
 		protected JsonObject createGrid(JsonArray rows,int total) {
 			JsonObject grid=new JsonObject();
 			grid.add(JsonAttr.rows.name(), rows);
@@ -363,7 +387,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		}
 		
 		protected String toString(Date date) {
-			return SimpleDateFormatInstance.yyyyMMddHHmmss_en.format(date); 
+			return SimpleDateFormatInstance.YMDHMSS.getSimpleDateFormat().format(date); 
 		}
 	
 }

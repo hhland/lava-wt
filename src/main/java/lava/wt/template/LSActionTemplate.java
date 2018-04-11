@@ -43,15 +43,15 @@ public abstract class LSActionTemplate implements ActionTemplate{
 
 
     protected int postStart(HttpServletRequest request) {
-        if(request.getParameterMap().containsKey("start")) {
-        	return Integer.parseInt(request.getParameter("start"));
+        if(request.getParameterMap().containsKey(ParamAttr.start.name())) {
+        	return Integer.parseInt(request.getParameter(ParamAttr.start.name()));
         }
         return baseStart();
     }
 
     protected int postLimit(HttpServletRequest request) {
-    	if(request.getParameterMap().containsKey("limit")) {
-        	return Integer.parseInt(request.getParameter("limit"));
+    	if(request.getParameterMap().containsKey(ParamAttr.limit.name())) {
+        	return Integer.parseInt(request.getParameter(ParamAttr.limit.name()));
         }
         return baseLimit();
     }
@@ -171,9 +171,15 @@ public abstract class LSActionTemplate implements ActionTemplate{
 	     return html.toString();
     }
     
+    public String html_test() {
+    	return "";
+    }
+    
     public abstract String grid() throws IOException;
     
     public abstract String total() throws IOException;
+    
+    public abstract String rows() throws IOException;
     
     
 }
