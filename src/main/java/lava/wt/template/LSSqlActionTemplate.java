@@ -285,13 +285,13 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		    
 		}
 	    
-	     public String easyui_grid() throws Exception{
+	     public String src_easyui() throws Exception{
 	        
 	        StringBuffer html=new StringBuffer("");
 	        String sql="select * from "+this.viewName()+" where 1=2";
 	        
 			JsonObject head=selectMetaData(sql);
-			html.append(easyui_grid(head));
+			html.append(src_easyui(head));
 			
 	                
 	        return html.toString();

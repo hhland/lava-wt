@@ -1,6 +1,7 @@
 package lava.wt.template;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,11 +32,14 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
         return TextCommon.isNullOrEmpty(pk);
     }
 
-    protected abstract Class<M> classM();
+    protected abstract Class<M> modelClass();
 
     protected abstract M readByPk(String pk) throws Exception;
 
-    protected abstract M newModel();
+    protected  M newModel() throws Exception{
+    	M m= ReflectCommon.newInstance(modelClass());
+    	return m;
+    };
 
     protected abstract int create(M m) throws Exception;
 
@@ -94,8 +98,9 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
     public String update()  {
     	HttpServletRequest request=getRequest();
         ResultStruct result = new ResultStruct();
-        M source = null, post = newModel();
+        M source = null, post = null;
         try {
+        	 post = newModel();
             source = readByPk(pk);
             
             ReflectCommon.loadMap(toMap(request.getParameterMap()),m.getClass(),m);
@@ -147,7 +152,7 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
         return gson.toJson(m);
     }
 
-    public abstract M getModel();
+    
 
     
     protected class ResultStruct {

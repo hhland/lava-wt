@@ -67,7 +67,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
    	 return "";
     }
 
-    protected String easyui_grid(JsonObject head) {
+    protected String src_easyui(JsonObject head) {
     	 StringBuffer html=new StringBuffer("");
 	        
 	        String durl=this.getRequest().getRequestURI().replace("/easyui_grid", "/grid");

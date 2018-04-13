@@ -11,4 +11,6 @@ public interface ActionTemplate {
 	HttpServletResponse getResponse();
 	
 	HttpSession getSession();
+	
+	Class<? extends ActionTemplate> thisClass();
 }
