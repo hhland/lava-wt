@@ -57,7 +57,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        return new String[]{};
 	    }
 	    
-	    protected String[] postOrderby(HttpServletRequest request) {
+	    protected String[] paramOrderby(HttpServletRequest request) {
 	        String[] orderby = new String[]{};
 	        
 	        String	order = request.getParameter(ParamAttr.orderby.name() );
@@ -72,14 +72,14 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	    }
 	    
 	    
-	    protected String postOrderDir(HttpServletRequest request) {
+	    protected String paramOrderDir(HttpServletRequest request) {
 	    	String	dir = request.getParameter(ParamAttr.orderdir.name());
 	    	if(TextCommon.isNullOrEmpty(dir))dir=baseOrderDir();
 	    	return dir;
 	    }
 	    
 
-	    protected String postCondition(HttpServletRequest request) {
+	    protected String paramCondition(HttpServletRequest request) {
 	    	Map<String,String[]> parameters= request.getParameterMap();
 	        String condition = "";
 	        for (Iterator<String> it = this.getRequest().getParameterMap().keySet().iterator(); it.hasNext();) {
@@ -119,7 +119,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    protected final String createDataSql(HttpServletRequest request) {
 	        String sql = "", sqlPattern = "select {0} from {1} {2} ";
-	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.postCondition(request);
+	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.paramCondition(request);
 	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
 	            baseCondition = TextCommon.trim(baseCondition, ",", "and", "or", "and");
 	            postCondition = TextCommon.trim(postCondition, ",", "and", "or", "and");
@@ -142,10 +142,10 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    protected final String createOrderbySql(HttpServletRequest request) {
 	    	
-	        String sql = createDataSql(request), orderby = " ",dir=this.postOrderDir(request);
+	        String sql = createDataSql(request), orderby = " ",dir=this.paramOrderDir(request);
 	        String []
 	        		baseOrderby = this.baseOrderby(), 
-	        		postOrderby = this.postOrderby(request);
+	        		postOrderby = this.paramOrderby(request);
 
 	        if (baseOrderby.length>0&&postOrderby.length >0) {
 	            orderby += MessageFormat.format(" order by {0},{1} ", 
@@ -161,7 +161,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    protected final String createCountSql(HttpServletRequest request) {
 	        String sql = "", sqlPattern = "select count(*) from {0} {1} ";
-	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.postCondition(request), viewName = viewName();
+	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.paramCondition(request), viewName = viewName();
 	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
 	            condition = MessageFormat.format(" where {0} and ( {1} ) ", baseCondition, postCondition);
 	        } else if (!TextCommon.isNullOrEmpty(baseCondition)) {
