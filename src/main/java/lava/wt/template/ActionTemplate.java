@@ -13,4 +13,6 @@ public interface ActionTemplate {
 	HttpSession getSession();
 	
 	Class<? extends ActionTemplate> thisClass();
+	
+	
 }

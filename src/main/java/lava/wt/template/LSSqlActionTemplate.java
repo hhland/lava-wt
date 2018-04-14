@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
@@ -204,7 +206,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		@Override
 	    public String grid() throws IOException {
 	        HttpServletRequest request=getRequest();
-            int start=postStart(request),limit=postLimit(request);
+            int start=paramStart(request),limit=paramLimit(request);
 	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
 	        
 	        
@@ -233,14 +235,41 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        
 	    }
 		
-		
-		
-	    
+		@Override
+		public String tree() throws IOException {
+			// TODO Auto-generated method stub
+			HttpServletRequest request=getRequest();
+            int start=paramStart(request),limit=paramLimit(request);
+	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+	        
+	        
+	        int count=0;
+	        JsonArray rows=null;
+				try {
+					rows = selectList(sql);
+					 for (int i = 0; i < rows.size(); i++) {
+			                rows.set(i, rowEach(i,rows.get(i).getAsJsonObject()));
+			         }
+			            
+			            if (rows.size() < limit) {
+			                count=(start*limit)+rows.size();
+			            } else {
+			                String csql = createCountSql(request);
+			                count = selectInt(csql);
+			            }
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			JsonObject grid=createTree(rows, count);
+	           
+	        return grid.toString();
+		}
+
 		@Override
 		public String rows() throws IOException {
 			// TODO Auto-generated method stub
 			HttpServletRequest request=getRequest();
-            int start=postStart(request),limit=postLimit(request);
+            int start=paramStart(request),limit=paramLimit(request);
 	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
 	        JsonArray rows=null;
 				try {
@@ -263,10 +292,17 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 			grid.addProperty(JsonAttr.total.name(), total);
 			return grid;
 		}
+		
+		protected JsonObject createTree(JsonArray rows,int total) {
+			JsonObject grid=new JsonObject();
+			grid.add(JsonAttr.rows.name(), rows);
+			grid.addProperty(JsonAttr.total.name(), total);
+			return grid;
+		}
 	    
 	    public String debug() throws IOException {
 	    	HttpServletRequest request=getRequest();
-            int start=postStart(request),limit=postLimit(request);
+            int start=paramStart(request),limit=paramLimit(request);
 	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
 	    	
 			JsonObject debug=new JsonObject();
@@ -302,7 +338,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	     
 	     public String html_table() {
 	    	 HttpServletRequest request=getRequest();
-	            int start=postStart(request),limit=postLimit(request);
+	            int start=paramStart(request),limit=paramLimit(request);
 		        String sql = createPageSql(this.createOrderbySql(request),start, limit);
 		        String csql=createCountSql(request);
 		        JsonObject head=null;
