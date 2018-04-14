@@ -37,7 +37,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	   public abstract Connection  createConnection() throws SQLException;
 	   
 	   public void onConnectionEnd(Connection connection) {
-		    MethodInstance.close.invoke(connection);
+		 
 	   }
 	   
 	    protected abstract String viewName();
