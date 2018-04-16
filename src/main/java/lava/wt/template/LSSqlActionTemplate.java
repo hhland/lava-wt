@@ -79,7 +79,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	    }
 	    
 
-	    protected String paramCondition(HttpServletRequest request) {
+	    protected String postCondition(HttpServletRequest request) {
 	    	Map<String,String[]> parameters= request.getParameterMap();
 	        String condition = "";
 	        for (Iterator<String> it = this.getRequest().getParameterMap().keySet().iterator(); it.hasNext();) {
@@ -119,7 +119,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    protected final String createDataSql(HttpServletRequest request) {
 	        String sql = "", sqlPattern = "select {0} from {1} {2} ";
-	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.paramCondition(request);
+	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.postCondition(request);
 	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
 	            baseCondition = TextCommon.trim(baseCondition, ",", "and", "or", "and");
 	            postCondition = TextCommon.trim(postCondition, ",", "and", "or", "and");
@@ -161,7 +161,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    protected final String createCountSql(HttpServletRequest request) {
 	        String sql = "", sqlPattern = "select count(*) from {0} {1} ";
-	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.paramCondition(request), viewName = viewName();
+	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.postCondition(request), viewName = viewName();
 	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
 	            condition = MessageFormat.format(" where {0} and ( {1} ) ", baseCondition, postCondition);
 	        } else if (!TextCommon.isNullOrEmpty(baseCondition)) {

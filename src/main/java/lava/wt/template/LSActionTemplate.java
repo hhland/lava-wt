@@ -219,8 +219,12 @@ public abstract class LSActionTemplate implements ActionTemplate{
               html.append(name+":<input type='"+type+"' name='"+name+"' /></hr>");
     	   }
     	}
-
-    	html.append("action:<select name='action' onchange=\"document.getElementById('test_form').submit()\">");
+        
+    	
+    	
+    	html.append("</fieldset>");
+    	
+         html.append("action:<select name='action' onchange=\"document.getElementById('test_form').submit()\">");
     	
     	Map<String,Method> openMethods= getOpenMethods();
     	
@@ -229,8 +233,9 @@ public abstract class LSActionTemplate implements ActionTemplate{
     		html.append("<option value='"+name+"' >"+name+"</option>");
     	}
     	html.append("</select>");
+    	html.append("<button type='submit'>Ë¢ÐÂ</button>");
     	
-    	html.append("</fieldset></form><iframe name='test_frame' style=\"width:100%;height:800px\" ></iframe>")
+    	html.append("</form><iframe name='test_frame' style=\"width:100%;height:800px\" ></iframe>")
     	.append("</body></html>")
     	;
     	return html.toString();
