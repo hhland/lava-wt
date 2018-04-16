@@ -35,7 +35,7 @@ public abstract class MDSqlActionTemplate<M> extends MDActionTemplate<M> {
 	protected int create(M m) throws Exception {
 		// TODO Auto-generated method stub
 		Table<M> table=getTable();
-		return table.insert(m);
+		return (int)table.insert(m);
 	}
 
 
@@ -43,7 +43,7 @@ public abstract class MDSqlActionTemplate<M> extends MDActionTemplate<M> {
 	protected int update(M m) throws Exception {
 		// TODO Auto-generated method stub
 		Table<M> table=getTable();
-		return table.update(m);
+		return (int)table.update(m);
 	}
 
 
@@ -51,7 +51,7 @@ public abstract class MDSqlActionTemplate<M> extends MDActionTemplate<M> {
 	protected int delete(M m) throws Exception {
 		// TODO Auto-generated method stub
 		Table<M> table=getTable();
-		return table.delete(m);
+		return (int)table.delete(m);
 	}
 
 
