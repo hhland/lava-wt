@@ -219,7 +219,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 			         }
 			            
 			            if (rows.size() < limit) {
-			                count=(start*limit)+rows.size();
+			                count=start+rows.size();
 			            } else {
 			                String csql = createCountSql(request);
 			                count = selectInt(csql);
