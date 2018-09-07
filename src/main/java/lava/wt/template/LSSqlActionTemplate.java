@@ -13,17 +13,15 @@ import java.util.Iterator;
 
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
-import lava.rt.instance.MethodInstance;
-import lava.wt.instance.SimpleDateFormatInstance;
-import lava.wt.common.TextCommon;
+
+
+
+
+
 
 
 
@@ -57,11 +55,11 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        return new String[]{};
 	    }
 	    
-	    protected String[] paramOrderby(HttpServletRequest request) {
+	    protected String[] paramOrderby() {
 	        String[] orderby = new String[]{};
 	        
-	        String	order = request.getParameter(ParamAttr.orderby.name() );
-	        if (!TextCommon.isNullOrEmpty(order) ) {
+	        String	order = getParameterMap().get(ParamAttr.orderby.name() );
+	        if (!isNullOrEmpty(order) ) {
 	            orderby=order.split(",");
 	        }
 	        return orderby;
@@ -72,20 +70,20 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	    }
 	    
 	    
-	    protected String paramOrderDir(HttpServletRequest request) {
-	    	String	dir = request.getParameter(ParamAttr.orderdir.name());
-	    	if(TextCommon.isNullOrEmpty(dir))dir=baseOrderDir();
+	    protected String paramOrderDir() {
+	    	String	dir = getParameterMap().get(ParamAttr.orderdir.name());
+	    	if(isNullOrEmpty(dir))dir=baseOrderDir();
 	    	return dir;
 	    }
 	    
 
-	    protected String postCondition(HttpServletRequest request) {
-	    	Map<String,String[]> parameters= request.getParameterMap();
+	    protected String postCondition() {
+	    	Map<String,String> parameters= getParameterMap();
 	        String condition = "";
-	        for (Iterator<String> it = this.getRequest().getParameterMap().keySet().iterator(); it.hasNext();) {
+	        for (Iterator<String> it =getParameterMap().keySet().iterator(); it.hasNext();) {
 	            String name = it.next();
-	            String value = parameters.get(name)[0];
-	            if (TextCommon.isNullOrEmpty(value)) {
+	            String value = parameters.get(name);
+	            if (isNullOrEmpty(value)) {
 	                continue;
 	            }
 	            if (name.startsWith("qc_like_")) {
@@ -107,7 +105,7 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	                String colName = name.substring("qn_from_".length(), name.length());
 	                String toName = "qn_to_" + colName;
 	                if (parameters.containsKey(toName)) {
-	                    String toValue = parameters.get(toName)[0];
+	                    String toValue = parameters.get(toName);
 	                    condition += MessageFormat.format(" and {0} between {1} and {2}", colName, value, toValue);
 	                } else {
 	                    condition += MessageFormat.format(" and {0} > {1}", colName, value);
@@ -117,18 +115,18 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        return condition;
 	    }
 
-	    protected final String createDataSql(HttpServletRequest request) {
+	    protected final String createDataSql() {
 	        String sql = "", sqlPattern = "select {0} from {1} {2} ";
-	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.postCondition(request);
-	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
-	            baseCondition = TextCommon.trim(baseCondition, ",", "and", "or", "and");
-	            postCondition = TextCommon.trim(postCondition, ",", "and", "or", "and");
+	        String condition = "", columns = this.columns(), viewName = viewName(), baseCondition = this.baseCondition(), postCondition = this.postCondition();
+	        if (!isNullOrEmpty(baseCondition,postCondition)) {
+	            baseCondition = trim(baseCondition, ",", "and", "or", "and");
+	            postCondition = trim(postCondition, ",", "and", "or", "and");
 	            condition = MessageFormat.format(" where {0} and ( {1} ) ", baseCondition, postCondition);
-	        } else if (!TextCommon.isNullOrEmpty(baseCondition)) {
-	            baseCondition = TextCommon.trim(baseCondition, ",", "and", "or", "and");
+	        } else if (!isNullOrEmpty(baseCondition)) {
+	            baseCondition = trim(baseCondition, ",", "and", "or", "and");
 	            condition = " where " + baseCondition;
-	        } else if (!TextCommon.isNullOrEmpty(postCondition)) {
-	            postCondition = TextCommon.trim(postCondition, ",", "and", "or", "and");
+	        } else if (!isNullOrEmpty(postCondition)) {
+	            postCondition = trim(postCondition, ",", "and", "or", "and");
 	            condition = " where " + postCondition;
 	        }
 	        sql = MessageFormat.format(sqlPattern,
@@ -140,12 +138,13 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 
 	    }
 
-	    protected final String createOrderbySql(HttpServletRequest request) {
+	    
+		protected final String createOrderbySql( ) {
 	    	
-	        String sql = createDataSql(request), orderby = " ",dir=this.paramOrderDir(request);
+	        String sql = createDataSql(), orderby = " ",dir=this.paramOrderDir();
 	        String []
 	        		baseOrderby = this.baseOrderby(), 
-	        		postOrderby = this.paramOrderby(request);
+	        		postOrderby = this.paramOrderby();
 
 	        if (baseOrderby.length>0&&postOrderby.length >0) {
 	            orderby += MessageFormat.format(" order by {0},{1} ", 
@@ -159,14 +158,14 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	        return sql;
 	    }
 
-	    protected final String createCountSql(HttpServletRequest request) {
+	    protected final String createCountSql( ) {
 	        String sql = "", sqlPattern = "select count(*) from {0} {1} ";
-	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.postCondition(request), viewName = viewName();
-	        if (!TextCommon.isNullOrEmpty(baseCondition,postCondition)) {
+	        String condition = "", baseCondition = this.baseCondition(), postCondition = this.postCondition(), viewName = viewName();
+	        if (!isNullOrEmpty(baseCondition,postCondition)) {
 	            condition = MessageFormat.format(" where {0} and ( {1} ) ", baseCondition, postCondition);
-	        } else if (!TextCommon.isNullOrEmpty(baseCondition)) {
+	        } else if (!isNullOrEmpty(baseCondition)) {
 	            condition = " where " + baseCondition;
-	        } else if (!TextCommon.isNullOrEmpty(postCondition)) {
+	        } else if (!isNullOrEmpty(postCondition)) {
 	            condition = " where " + postCondition;
 	        }
 	       
@@ -186,15 +185,17 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	    
 
 		@Override
-		public String total() throws IOException {
+		public String xhr_total() throws IOException {
 			// TODO Auto-generated method stub
-			HttpServletRequest request=getRequest();
-			 String sql = createCountSql(request);
+			
+			 String sql = createCountSql();
 		        
 		    JsonObject grid=new JsonObject();
 			int count=0;
+			Connection connection=null;
 			try {
-				count = selectInt(sql);
+				connection=createConnection();
+				count = selectInt(connection,sql);
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -204,16 +205,17 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		}
 
 		@Override
-	    public String grid() throws IOException {
-	        HttpServletRequest request=getRequest();
-            int start=paramStart(request),limit=paramLimit(request);
-	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+	    public String xhr_grid() throws IOException {
 	        
+            int start=paramStart(),limit=paramLimit();
+	        String sql = createPageSql(this.createOrderbySql(),start, limit);
+	        Connection connection=null;
 	        
 	        int count=0;
 	        JsonArray rows=null;
 				try {
-					rows = selectList(sql);
+					connection=createConnection();
+					rows = selectList(connection,sql);
 					 for (int i = 0; i < rows.size(); i++) {
 			                rows.set(i, rowEach(i,rows.get(i).getAsJsonObject()));
 			         }
@@ -221,8 +223,8 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 			            if (rows.size() < limit) {
 			                count=start+rows.size();
 			            } else {
-			                String csql = createCountSql(request);
-			                count = selectInt(csql);
+			                String csql = createCountSql();
+			                count = selectInt(connection,csql);
 			            }
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -236,17 +238,18 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 	    }
 		
 		@Override
-		public String tree() throws IOException {
+		public String xhr_tree() throws IOException {
 			// TODO Auto-generated method stub
-			HttpServletRequest request=getRequest();
-            int start=paramStart(request),limit=paramLimit(request);
-	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+			
+            int start=paramStart(),limit=paramLimit();
+	        String sql = createPageSql(this.createOrderbySql(),start, limit);
 	        
-	        
+	        Connection connection=null;
 	        int count=0;
 	        JsonArray rows=null;
 				try {
-					rows = selectList(sql);
+					connection=createConnection();
+					rows = selectList(connection,sql);
 					 for (int i = 0; i < rows.size(); i++) {
 			                rows.set(i, rowEach(i,rows.get(i).getAsJsonObject()));
 			         }
@@ -254,8 +257,8 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 			            if (rows.size() < limit) {
 			                count=(start*limit)+rows.size();
 			            } else {
-			                String csql = createCountSql(request);
-			                count = selectInt(csql);
+			                String csql = createCountSql();
+			                count = selectInt(connection,csql);
 			            }
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -266,14 +269,16 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		}
 
 		@Override
-		public String rows() throws IOException {
+		public String xhr_rows() throws IOException {
 			// TODO Auto-generated method stub
-			HttpServletRequest request=getRequest();
-            int start=paramStart(request),limit=paramLimit(request);
-	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+			
+            int start=paramStart(),limit=paramLimit();
+	        String sql = createPageSql(this.createOrderbySql(),start, limit);
 	        JsonArray rows=null;
+	        Connection connection=null;
 				try {
-					rows = selectList(sql);
+					connection=createConnection();
+					rows = selectList(connection,sql);
 					 for (int i = 0; i < rows.size(); i++) {
 			                rows.set(i, rowEach(i,rows.get(i).getAsJsonObject()));
 			         }
@@ -301,17 +306,17 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		}
 	    
 	    public String debug() throws IOException {
-	    	HttpServletRequest request=getRequest();
-            int start=paramStart(request),limit=paramLimit(request);
-	        String sql = createPageSql(this.createOrderbySql(request),start, limit);
+	    	 
+            int start=paramStart(),limit=paramLimit();
+	        String sql = createPageSql(this.createOrderbySql(),start, limit);
 	    	
 			JsonObject debug=new JsonObject();
 
 			
-				String dsql=this.createDataSql(request);
-	                        String osql=this.createOrderbySql(request);
+				String dsql=this.createDataSql();
+	                        String osql=this.createOrderbySql();
 				String psql=this.createPageSql(dsql,start, limit);
-				String csql=this.createCountSql(request);
+				String csql=this.createCountSql();
 				debug.addProperty("dataSql", dsql);
 				debug.addProperty("pageSql", psql);
 				debug.addProperty("countSql", csql);
@@ -321,13 +326,13 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		    
 		}
 	    
-	     public String src_easyui() throws Exception{
+	     public String doc_src() throws Exception{
 	        
 	        StringBuffer html=new StringBuffer("");
 	        String sql="select * from "+this.viewName()+" where 1=2";
-	        
-			JsonObject head=selectMetaData(sql);
-			html.append(src_easyui(head));
+	        Connection connection=createConnection();
+			JsonObject head=selectMetaData(connection,sql);
+			html.append(doc_src(head));
 			
 	                
 	        return html.toString();
@@ -335,43 +340,45 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 		}
 	    
 	     
-	     
-	     public String html_table() {
-	    	 HttpServletRequest request=getRequest();
-	            int start=paramStart(request),limit=paramLimit(request);
-		        String sql = createPageSql(this.createOrderbySql(request),start, limit);
-		        String csql=createCountSql(request);
+	   
+	     public String doc_table() {
+	    	  
+	            int start=paramStart(),limit=paramLimit();
+		        String sql = createPageSql(this.createOrderbySql(),start, limit);
+		        String csql=createCountSql();
 		        JsonObject head=null;
 		        JsonArray rows=null;
 		        int total=0;
+		        Connection connection=null;
 				try {
-					head=selectMetaData(sql);
-					rows = selectList(sql);
-					total=selectInt(csql);
+					connection=createConnection();
+					head=selectMetaData(connection,sql);
+					rows = selectList(connection,sql);
+					total=selectInt(connection,csql);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 		        
-	    	 return html_table(head,rows,total);
+	    	 return doc_table(head,rows,total);
 	     }
 	    
 
-		protected int selectInt(String sql) throws SQLException {
+		protected int selectInt(Connection connection ,String sql) throws SQLException {
 			// TODO Auto-generated method stub
 			int re=0;
-			Connection connection=createConnection();
+			
 			PreparedStatement preparedStatement= connection.prepareStatement(sql);
 			ResultSet resultSet= preparedStatement.executeQuery(sql);
 			if(resultSet.next()) {
 			   re=resultSet.getInt(1);
 			}
-			MethodInstance.close.invoke(preparedStatement,resultSet);
+			close(preparedStatement,resultSet);
 			return re;
 		}
 
-		protected JsonObject selectMetaData(String sql) throws SQLException {
-			Connection connection=createConnection();
+		protected JsonObject selectMetaData(Connection connection ,String sql) throws SQLException {
+			
 			PreparedStatement ps= connection.prepareStatement(sql);
 			ResultSetMetaData rsmd= ps.executeQuery().getMetaData();
 			JsonObject head=new JsonObject();
@@ -384,10 +391,10 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 			return head;
 		}
 		
-		protected JsonArray selectList(String sql) throws SQLException {
+		protected JsonArray selectList(Connection connection,String sql) throws SQLException {
 			// TODO Auto-generated method stub
 			JsonArray jarr=new JsonArray();
-			Connection connection=createConnection();
+			
 			PreparedStatement preparedStatement= connection.prepareStatement(sql);
 		
 			ResultSet resultSet= preparedStatement.executeQuery(sql);
@@ -418,12 +425,10 @@ public abstract  class LSSqlActionTemplate extends LSActionTemplate{
 				 jarr.add(json);
 			}
 			
-			MethodInstance.close.invoke(preparedStatement,resultSet);
+			close(preparedStatement,resultSet);
 			return jarr;
 		}
 		
-		protected String toString(Date date) {
-			return SimpleDateFormatInstance.YMDHMSS.getSimpleDateFormat().format(date); 
-		}
+		
 	
 }

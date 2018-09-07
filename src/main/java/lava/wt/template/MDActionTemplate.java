@@ -1,47 +1,33 @@
 package lava.wt.template;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import com.google.gson.Gson;
 
-import lava.wt.common.ReflectCommon;
-import lava.wt.common.TextCommon;
-import lava.wt.instance.GsonInstance;
 
-public abstract  class  MDActionTemplate<M> implements ActionTemplate {
 
-	protected Gson gson=GsonInstance.simple.getGson();
+
+public abstract  class  MDActionTemplate<M> extends ActionTemplate {
+
 	
-	private M m;
+	
 
-    protected String pk;
+    
 
-    public void setPk(String pk) {
-        this.pk = pk;
-    }
+    
 
-    public boolean hasPk() {
-        return TextCommon.isNullOrEmpty(pk);
-    }
+    protected abstract M readByPk(Object pk) throws Exception;
+    
+    protected abstract Object  getPk(M m);
 
-    protected abstract Class<M> modelClass();
+    
 
-    protected abstract M readByPk(String pk) throws Exception;
-
-    protected  M newModel() throws Exception{
-    	M m= ReflectCommon.newInstance(modelClass());
-    	return m;
-    };
-
-    protected abstract int create(M m) throws Exception;
+    protected abstract int _create(M m) throws Exception;
+    
+    
 
     protected void onCreate(M m, ResultStruct re) throws Exception {
     }
@@ -52,7 +38,7 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
     protected void onCreateSuccess(M m, ResultStruct re) throws Exception {
     }
 
-    protected abstract int update(M m) throws Exception;
+    protected abstract int _update(M m) throws Exception;
 
     protected void onUpdate(M m, M post, ResultStruct re) throws Exception {
     }
@@ -74,57 +60,56 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
     protected void onDeleteSuccess(M m, ResultStruct re) throws Exception {
     }
 
-    public String create()  {
-    	HttpServletRequest request=getRequest();
+    public String create(M post)  {
+    	
         ResultStruct result = new ResultStruct();
-        M m = null;
 
         try {
-            m = newModel();
-
-            ReflectCommon.loadMap(toMap(request.getParameterMap()),m.getClass(),m);
-            onCreate(m, result);
-            int re=create(m);
-            onCreateSuccess(m, result);
+            
+            onCreate(post, result);
+            int re=_create(post);
+            onCreateSuccess(post, result);
 
         } catch (Exception ex) {
             result.setCode(ResultStruct.CODE_EXCEPTION);
             result.setMsg("insert exception:" + ex.getMessage());
-            onCreateError(m, result, ex);
+            onCreateError(post, result, ex);
         }
-        return gson.toJson(result);
+        return toJson(result);
     }
 
-    public String update()  {
-    	HttpServletRequest request=getRequest();
+    public String update(M post)  {
+    	
         ResultStruct result = new ResultStruct();
-        M source = null, post = null;
+        M source = null;
+        Object id=getPk(post);
         try {
-        	 post = newModel();
-            source = readByPk(pk);
-            
-            ReflectCommon.loadMap(toMap(request.getParameterMap()),m.getClass(),m);
-            ReflectCommon.copyFieldByMethod(post, source);
+        	
+            source = readByPk(id);
             onUpdate(source, post, result);
-            int re=update(source);
-            onUpdateSuccess(m, post, result);
+            int re=_update(source);
+            onUpdateSuccess(source, post, result);
 
         } catch (Exception ex) {
             result.setCode(ResultStruct.CODE_EXCEPTION);
             result.setMsg("update exception:" + ex.getMessage());
-            onUpdateError(m, post, result, ex);
+            onUpdateError(source, post, result, ex);
         }
-        return gson.toJson(result);
+        return toJson(result);
     }
 
-    public String delete()  {
-    	HttpServletRequest request=getRequest();
+   
+
+	
+
+	public String delete(String id)  {
+    	
         ResultStruct result = new ResultStruct();
         M m = null;
 
         try {
-            m = readByPk(pk);
-            ReflectCommon.loadMap(toMap(request.getParameterMap()),m.getClass(),m);
+            m = readByPk(id);
+            
             onDelete(m, result);
             delete(m);
             onDeleteSuccess(m, result);
@@ -134,22 +119,23 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
             result.setMsg("delete exception:" + ex.getMessage());
             onDeleteError(m, result, ex);
         }
-        return gson.toJson(result);
+        return toJson(result);
        
     }
 
-    public String save() throws IOException {
-        if (hasPk()) {
-           return this.update();
-        } else {
-
-           return this.create();
-        }
+    public String save(M post) throws Exception {
+        String re=""; 
+    	try {
+        	re= create(post);
+         }catch(Exception ex) {
+        	re= update( post);
+         }
+    	return re;
     }
 
-    public String read() throws Exception {
-        M m = hasPk() ? readByPk(pk) : newModel();
-        return gson.toJson(m);
+    public String read(String id) throws Exception {
+        M m = readByPk(id);
+        return toJson(m);
     }
 
     
@@ -196,5 +182,10 @@ public abstract  class  MDActionTemplate<M> implements ActionTemplate {
 		}
 		return map;
     }
+    
+    
+    
+    
+    
 
 }

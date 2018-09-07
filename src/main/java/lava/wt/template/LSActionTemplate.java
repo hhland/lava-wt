@@ -14,23 +14,22 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.print.attribute.ResolutionSyntax;
-import javax.servlet.http.HttpServletRequest;
-
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import lava.rt.common.LangCommon;
-import lava.rt.common.ReflectCommon;
-import lava.wt.common.TextCommon;
-import lava.wt.instance.SimpleDateFormatInstance;
+import lava.wt.common.WebCommon;
 
 
 
 
 
-public abstract class LSActionTemplate implements ActionTemplate{
 
+public abstract class LSActionTemplate extends ActionTemplate{
+
+	protected abstract String getRequestURI() ;
+	protected abstract String toString(Date date);
+	protected abstract Map<String,String> getParameterMap();
 
     protected enum JsonAttr{
     	msg,total,rows
@@ -39,24 +38,22 @@ public abstract class LSActionTemplate implements ActionTemplate{
     protected enum ParamAttr{
     	start,limit,orderby,orderdir,action;
     	
-    	protected int intValue(HttpServletRequest request) {
-    		return Integer.parseInt(request.getParameter(this.name()));
+    	protected int intValue(Map<String ,String> parameter) {
+    		return Integer.parseInt(parameter.get(this.name()));
     	}
     	
-    	protected float floatValue(HttpServletRequest request) {
-    		return Float.parseFloat(request.getParameter(this.name()));
+    	protected float floatValue(Map<String ,String> parameter) {
+    		return Float.parseFloat(parameter.get(this.name()));
     	}
     	
-    	protected Date dateValue(HttpServletRequest request) throws ParseException {
-    		return SimpleDateFormatInstance.tryParse(request.getParameter(this.name()));
-    	}
     	
-        protected String value(HttpServletRequest request) {
-        	return request.getParameter(this.name());
+    	
+        protected String value(Map<String ,String> parameter) {
+        	return parameter.get(this.name());
     	}
         
-        protected boolean isContains(HttpServletRequest request) {
-        	return request.getParameterMap().containsKey(this.name());
+        protected boolean isContains(Map<String ,String> parameter) {
+        	return parameter.containsKey(this.name());
         }
     }
     
@@ -70,13 +67,15 @@ public abstract class LSActionTemplate implements ActionTemplate{
     }
 
 
-    protected int paramStart(HttpServletRequest request) {
-        return ParamAttr.start.isContains(request)?ParamAttr.start.intValue(request):baseStart();
+    protected int paramStart() {
+    	Map<String,String> parameter=getParameterMap();
+        return ParamAttr.start.isContains(parameter)?ParamAttr.start.intValue(parameter):baseStart();
         
     }
 
-    protected int paramLimit(HttpServletRequest request) {
-    	return ParamAttr.limit.isContains(request)?ParamAttr.limit.intValue(request):baseLimit();
+    protected int paramLimit() {
+    	Map<String,String> parameter=getParameterMap();
+    	return ParamAttr.limit.isContains(parameter)?ParamAttr.limit.intValue(parameter):baseLimit();
         
     }
 
@@ -91,10 +90,10 @@ public abstract class LSActionTemplate implements ActionTemplate{
    	 return "";
     }
 
-    protected String src_easyui(JsonObject head) {
+    protected String doc_src(JsonObject head) {
     	 StringBuffer html=new StringBuffer("");
 	        
-	        String durl=this.getRequest().getRequestURI().replace("/easyui_grid", "/grid");
+	        String durl="";//this.getRequest().getRequestURI().replace("/easyui_grid", "/grid");
 			StringBuffer datagrid=new StringBuffer(""),datagrid_js=new StringBuffer("");
 			datagrid.append("<table id=\"table-datagrid\" class=\"easyui-datagrid\" data-options=\"url:'"+durl+"',fit:true,toolbar:'#div-toolbar',idField:'_id'\"> \n");
 			datagrid.append("<thead data-options=\"frozen:true\"><tr> </thead><thead><tr> \n");
@@ -103,13 +102,13 @@ public abstract class LSActionTemplate implements ActionTemplate{
 				String field=it.next();
 				int ct=head.get(field).getAsInt();
 				String editor="type:''validatebox'',options:'{'required:true '}'";
-				if(LangCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
+				if(isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
 					editor="type:''numberspinner'',options:'{'required:true,precision:0 '}'";
-				}else if(LangCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
+				}else if(isIn(ct, Types.FLOAT,Types.DOUBLE)){
 					editor="type:''numberbox'',options:'{'required:true,precision:2 '}'";
-				}else if(LangCommon.isIn(ct, Types.DATE)){
+				}else if(isIn(ct, Types.DATE)){
 					editor="type:''datebox'',options:'{'required:true '}'";
-				}else if(LangCommon.isIn(ct, Types.TIMESTAMP)){
+				}else if(isIn(ct, Types.TIMESTAMP)){
 					editor="type:''datetimebox'',options:'{'required:true '}'"; 
 				}
 				datagrid.append(MessageFormat.format("\t<th data-options=\"field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}'\">"+field+"</th> \n",field));
@@ -123,13 +122,13 @@ public abstract class LSActionTemplate implements ActionTemplate{
 				String field=it.next();
 				int ct=head.get(field).getAsInt();
 				String editor="type:\"validatebox\",options:'{'required:true '}'";
-				if(LangCommon.isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
+				if(isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
 					editor="type:\"numberspinner\",options:'{'required:true,precision:0 '}'";
-				}else if(LangCommon.isIn(ct, Types.FLOAT,Types.DOUBLE)){
+				}else if(isIn(ct, Types.FLOAT,Types.DOUBLE)){
 					editor="type:\"numberbox\",options:'{'required:true,precision:2 '}'";
-				}else if(LangCommon.isIn(ct, Types.DATE)){
+				}else if(isIn(ct, Types.DATE)){
 					editor="type:\"datebox\",options:'{'required:true '}'";
-				}else if(LangCommon.isIn(ct, Types.TIMESTAMP)){
+				}else if(isIn(ct, Types.TIMESTAMP)){
 					editor="type:\"datetimebox\",options:'{'required:true '}'";
 				}
 				datagrid_js.append(MessageFormat.format("var col_{0}='{'field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}' '}'; \n",field));
@@ -152,7 +151,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
 			
 			html
 			//.append("<html><body>")
-			.append("<fieldset>easyui-datagrid html<pre>"+TextCommon.htmlWapper(datagrid.toString())+"</pre>")
+			.append("<fieldset>easyui-datagrid html<pre>"+WebCommon.htmlWapper(datagrid.toString())+"</pre>")
 			.append("<fieldset>easyui-datagrid js<pre>"+datagrid_js.toString()+"</pre>")
 			//.append("</body></html>")
 			;
@@ -160,10 +159,10 @@ public abstract class LSActionTemplate implements ActionTemplate{
 	        return html.toString();
     }
     
-    public String html_table(JsonObject head,JsonArray rows,int total){
+    public String doc_table(JsonObject head,JsonArray rows,int total){
     	 StringBuffer html=new StringBuffer("");
 	        
-	     String durl=this.getRequest().getRequestURI();
+	     String durl=this.getRequestURI();
 	     
 	     StringBuffer table=new StringBuffer("<table border='1' >"),headTr=new StringBuffer("<tr>");
 	     
@@ -195,13 +194,15 @@ public abstract class LSActionTemplate implements ActionTemplate{
 	     return html.toString();
     }
     
-    public String html_test() {
+    
+
+	public String doc_test() {
     	StringBuffer html=new StringBuffer();
     	html.append("<!DOCTYPE html>")
     	.append("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">")
     	.append("<title>"+thisClass().getSimpleName()+":test</title>")
     	.append("</head><body>")
-    	.append("<form id='test_form' target='test_frame' action='invoke'><fieldset><legend>调试参数</legend>")
+    	.append("<form id='test_form' target='test_frame' action='invoke'><fieldset><legend>param</legend>")
     	;
     	
     	for(Class cls=thisClass();!Object.class.equals(cls);cls=cls.getSuperclass()) {
@@ -224,7 +225,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
     	
     	html.append("</fieldset>");
     	
-         html.append("action:<select name='action' onchange=\"document.getElementById('test_form').submit()\">");
+         html.append("action:<select name='fun' onchange=\"document.getElementById('test_form').submit()\">");
     	
     	Map<String,Method> openMethods= getOpenMethods();
     	
@@ -233,7 +234,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
     		html.append("<option value='"+name+"' >"+name+"</option>");
     	}
     	html.append("</select>");
-    	html.append("<button type='submit'>刷新</button>");
+    	html.append("<button type='submit'>reload</button>");
     	
     	html.append("</form><iframe name='test_frame' style=\"width:100%;height:800px\" ></iframe>")
     	.append("</body></html>")
@@ -241,23 +242,58 @@ public abstract class LSActionTemplate implements ActionTemplate{
     	return html.toString();
     }
     
-    public abstract String grid() throws IOException;
+    public String doc_qunit() {
+    	StringBuffer doc=new StringBuffer("");
+    	doc.append("<!DOCTYPE html>\r\n" + 
+    			"	<html>\r\n" + 
+    			"\r\n" + 
+    			"	<head>\r\n" + 
+    			"\r\n" + 
+    			"	    <title>QUnit Test Suite</title>\r\n" + 
+    			"\r\n" + 
+    			"		 <link href=\"https://cdn.bootcss.com/qunit/2.4.1/qunit.min.css\" rel=\"stylesheet\">\r\n" + 
+    			"	   <script src=\"https://cdn.bootcss.com/qunit/2.4.1/qunit.min.js\"></script>\r\n" + 
+    			"");
+    	
+    	
+    	doc.append("</head>\r\n" + 
+    			"\r\n" + 
+    			"	<body>\r\n" + 
+    			"\r\n" + 
+    			"	    <h1 id=\"qunit-header\">QUnit Test Suite</h1>\r\n" + 
+    			"\r\n" + 
+    			"	    <h2 id=\"qunit-banner\"></h2>\r\n" + 
+    			"\r\n" + 
+    			"	    <div id=\"qunit-testrunner-toolbar\"></div>\r\n" + 
+    			"\r\n" + 
+    			"	    <h2 id=\"qunit-userAgent\"></h2>\r\n" + 
+    			"\r\n" + 
+    			"	    <ol id=\"qunit-tests\"></ol>\r\n" + 
+    			"\r\n" + 
+    			"	</body>\r\n" + 
+    			"\r\n" + 
+    			"	</html>");
+    	
+    	return doc.toString();
+    }
     
-    public abstract String total() throws IOException;
+    public abstract String xhr_grid() throws IOException;
     
-    public abstract String rows() throws IOException;
+    public abstract String xhr_total() throws IOException;
     
-    public abstract String tree() throws IOException;
+    public abstract String xhr_rows() throws IOException;
+    
+    public abstract String xhr_tree() throws IOException;
     
     
-    public  String invoke() {
-    	HttpServletRequest request=getRequest();
-    	String methodName=invokeMethod(request);
+    protected  String invoke(String fun) {
+    	
+    	
     	String result=null;
     	Map<String,Method> openMethods= getOpenMethods();
     	//for(Class cls=this.thisClass();!Object.class.equals(cls);cls=cls.getSuperclass()) {
     	
-    	Method mth= openMethods.get(methodName);
+    	Method mth= openMethods.get(fun);
     	    try {
 				result=(String)mth.invoke(this);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -270,10 +306,7 @@ public abstract class LSActionTemplate implements ActionTemplate{
     }
 
 	
-	protected String invokeMethod(HttpServletRequest request) {
-		// TODO Auto-generated method stub
-		return ParamAttr.action.value(request);
-	}
+	
     
     protected final Map<String,Method> getOpenMethods(){
     	Map<String,Method> openMethods=new HashMap<String,Method>();
