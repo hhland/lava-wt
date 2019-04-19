@@ -1,0 +1,1 @@
+%cd%\bin\ikvmc  -out:dll/lava-wt.dll target/lava-wt-0.0.1-SNAPSHOT.jar

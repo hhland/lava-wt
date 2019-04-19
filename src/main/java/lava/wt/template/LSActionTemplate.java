@@ -6,19 +6,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
-import javax.print.attribute.ResolutionSyntax;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import lava.wt.common.WebCommon;
 
 
 
@@ -27,35 +18,11 @@ import lava.wt.common.WebCommon;
 
 public abstract class LSActionTemplate extends ActionTemplate{
 
-	protected abstract String getRequestURI() ;
+	
 	protected abstract String toString(Date date);
 	protected abstract Map<String,String> getParameterMap();
 
-    protected enum JsonAttr{
-    	msg,total,rows
-    }
     
-    protected enum ParamAttr{
-    	start,limit,orderby,orderdir,action;
-    	
-    	protected int intValue(Map<String ,String> parameter) {
-    		return Integer.parseInt(parameter.get(this.name()));
-    	}
-    	
-    	protected float floatValue(Map<String ,String> parameter) {
-    		return Float.parseFloat(parameter.get(this.name()));
-    	}
-    	
-    	
-    	
-        protected String value(Map<String ,String> parameter) {
-        	return parameter.get(this.name());
-    	}
-        
-        protected boolean isContains(Map<String ,String> parameter) {
-        	return parameter.containsKey(this.name());
-        }
-    }
     
 
     protected int baseStart() {
@@ -67,17 +34,9 @@ public abstract class LSActionTemplate extends ActionTemplate{
     }
 
 
-    protected int paramStart() {
-    	Map<String,String> parameter=getParameterMap();
-        return ParamAttr.start.isContains(parameter)?ParamAttr.start.intValue(parameter):baseStart();
-        
-    }
+    protected abstract int paramStart();
 
-    protected int paramLimit() {
-    	Map<String,String> parameter=getParameterMap();
-    	return ParamAttr.limit.isContains(parameter)?ParamAttr.limit.intValue(parameter):baseLimit();
-        
-    }
+    protected abstract int paramLimit() ;
 
     
 
@@ -85,114 +44,6 @@ public abstract class LSActionTemplate extends ActionTemplate{
 
     
     
-    
-    public String help() {
-   	 return "";
-    }
-
-    protected String doc_src(JsonObject head) {
-    	 StringBuffer html=new StringBuffer("");
-	        
-	        String durl="";//this.getRequest().getRequestURI().replace("/easyui_grid", "/grid");
-			StringBuffer datagrid=new StringBuffer(""),datagrid_js=new StringBuffer("");
-			datagrid.append("<table id=\"table-datagrid\" class=\"easyui-datagrid\" data-options=\"url:'"+durl+"',fit:true,toolbar:'#div-toolbar',idField:'_id'\"> \n");
-			datagrid.append("<thead data-options=\"frozen:true\"><tr> </thead><thead><tr> \n");
-			for(Iterator<String> it=head.keySet().iterator();it.hasNext();) {
-			//for(int i=1;i<=rsmd.getColumnCount();i++){
-				String field=it.next();
-				int ct=head.get(field).getAsInt();
-				String editor="type:''validatebox'',options:'{'required:true '}'";
-				if(isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
-					editor="type:''numberspinner'',options:'{'required:true,precision:0 '}'";
-				}else if(isIn(ct, Types.FLOAT,Types.DOUBLE)){
-					editor="type:''numberbox'',options:'{'required:true,precision:2 '}'";
-				}else if(isIn(ct, Types.DATE)){
-					editor="type:''datebox'',options:'{'required:true '}'";
-				}else if(isIn(ct, Types.TIMESTAMP)){
-					editor="type:''datetimebox'',options:'{'required:true '}'"; 
-				}
-				datagrid.append(MessageFormat.format("\t<th data-options=\"field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}'\">"+field+"</th> \n",field));
-			}
-			datagrid.append("</thead></tr> \n");
-			datagrid.append("</table>\n")
-			.append("<div id=\"div-toolbar\"></div>")
-			;
-			for(Iterator<String> it=head.keySet().iterator();it.hasNext();) {
-			//for(int i=1;i<=rsmd.getColumnCount();i++){
-				String field=it.next();
-				int ct=head.get(field).getAsInt();
-				String editor="type:\"validatebox\",options:'{'required:true '}'";
-				if(isIn(ct, Types.BIGINT,Types.INTEGER,Types.SMALLINT,Types.TINYINT)){
-					editor="type:\"numberspinner\",options:'{'required:true,precision:0 '}'";
-				}else if(isIn(ct, Types.FLOAT,Types.DOUBLE)){
-					editor="type:\"numberbox\",options:'{'required:true,precision:2 '}'";
-				}else if(isIn(ct, Types.DATE)){
-					editor="type:\"datebox\",options:'{'required:true '}'";
-				}else if(isIn(ct, Types.TIMESTAMP)){
-					editor="type:\"datetimebox\",options:'{'required:true '}'";
-				}
-				datagrid_js.append(MessageFormat.format("var col_{0}='{'field:''{0}'',width:180,title:''{0}'',editor:'{' "+editor+" '}' '}'; \n",field));
-			 
-			}
-			datagrid_js.append("$(\"#table-datagrid_crud\").datagrid({url:\""+durl+"\",fit:true,toolbar:[],idField:\"_id\",")
-			.append("frozenColumns:[],columns:[[ \n")
-			;
-			for(Iterator<String> it=head.keySet().iterator();it.hasNext();) {
-			//for(int i=1;i<=rsmd.getColumnCount();i++){
-				String field=it.next();
-				datagrid_js.append("col_"+field);
-			    
-			}
-			datagrid_js.append(" ]]\n")
-			.append("} ) ;  //$(\"#table-datagrid_crud\").datagrid")
-			//datagrid_js.append("</table>\n")
-			//.append("<div id=\"div-toolbar\"></div>")
-			;
-			
-			html
-			//.append("<html><body>")
-			.append("<fieldset>easyui-datagrid html<pre>"+WebCommon.htmlWapper(datagrid.toString())+"</pre>")
-			.append("<fieldset>easyui-datagrid js<pre>"+datagrid_js.toString()+"</pre>")
-			//.append("</body></html>")
-			;
-	                //Session.close(connection, ps, null);
-	        return html.toString();
-    }
-    
-    public String doc_table(JsonObject head,JsonArray rows,int total){
-    	 StringBuffer html=new StringBuffer("");
-	        
-	     String durl=this.getRequestURI();
-	     
-	     StringBuffer table=new StringBuffer("<table border='1' >"),headTr=new StringBuffer("<tr>");
-	     
-	     for(Iterator<String> it=head.keySet().iterator();it.hasNext();) {
-	    	 String key=it.next();
-	    	
-	    	 headTr.append("<th>"+key+"</th>");
-	     }
-	     headTr.append("</tr>");
-	     table.append(headTr);
-	     for(int i=0;i<rows.size();i++) {
-	    	 JsonObject row=rows.get(i).getAsJsonObject();
-	    	 StringBuffer rowTr=new StringBuffer("<tr>");
-	    	 for(Iterator<String> it=row.keySet().iterator();it.hasNext();) {
-		    	 String key=it.next();
-		    	 Object value=row.get(key)==null?"null":row.get(key);
-		    	 rowTr.append("<td>"+value+"</td>");
-		     }
-	    	 rowTr.append("</tr>");
-	    	 
-	    	 table.append(rowTr);
-	     }
-	     
-	     
-	     table.append("</table>");
-	     
-	     html.append(table);
-	     
-	     return html.toString();
-    }
     
     
 
@@ -277,13 +128,13 @@ public abstract class LSActionTemplate extends ActionTemplate{
     	return doc.toString();
     }
     
-    public abstract String xhr_grid() throws IOException;
     
-    public abstract String xhr_total() throws IOException;
     
-    public abstract String xhr_rows() throws IOException;
+    protected abstract ResultStruct xhr_total() throws IOException;
     
-    public abstract String xhr_tree() throws IOException;
+    protected abstract String xhr_rows(int start,int limit) throws IOException;
+    
+    
     
     
     protected  String invoke(String fun) {

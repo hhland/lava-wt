@@ -3,9 +3,11 @@ package lava.wt.template;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-import com.google.gson.Gson;
+
 
 
 
@@ -15,6 +17,47 @@ public abstract class  ActionTemplate {
 	
 	protected abstract Class<? extends ActionTemplate> thisClass();
 	
+	
+	protected class ResultStruct {
+    	public static final int CODE_EXCEPTION = -1;
+    	public static final int CODE_FAIL = 0;
+    	public static final int CODE_SUCCESS = 1;
+		private String msg;
+		
+		private int code;
+		
+		private Object[] infos;
+
+		public int getCode() {
+			return code;
+		}
+
+		public void setCode(int code) {
+			this.code = code;
+		}
+
+		public String getMsg() {
+			return msg;
+		}
+
+		public void setMsg(String msg) {
+			this.msg = msg;
+		}
+		
+		public boolean isError() {
+			return this.code<=0;
+		}
+
+		public void setInfos(Object... infos) {
+			// TODO Auto-generated method stub
+			this.infos=infos;
+		}
+
+		public Object[] getInfos() {
+			return infos;
+		}
+    	
+    }
 	
 	
 	public static <T> boolean isIn(T obj1, T... objs) {
@@ -39,16 +82,49 @@ public abstract class  ActionTemplate {
 	}
 	
 	
-	public static boolean isNullOrEmpty( String... strings) {
-		for (String string :strings) {
-			if(string!=null&&string.trim().length()>0)
-				return false;
-		}
-	    return true;
-	  }
+	protected boolean isAllBlank(Object...values) {
+		   boolean ret=true;
+		   
+		   for(Object value: values) {
+			   if(value!=null) {
+				   if(value instanceof String) {
+					   if(((String) value).trim().length()>0) {
+						   ret=false;
+						   break;
+					   }
+				   }else {
+					   ret=false;
+					   break;
+				   }
+			   }
+		   }
+		   
+		   return ret;
+	   }
 	
+	   
+	   protected boolean isAnyBlank(Object...values) {
+		   boolean ret=false;
+		   
+		   for(Object value: values) {
+			   if(value==null) {
+				   ret=true;
+				   break;
+			   }
+			  
+			   if(value instanceof String) {
+				  if(((String) value).trim().length()==0) {
+						   ret=true;
+						   break;
+			   }
+			   }
+			   
+		   }
+		   
+		   return ret;
+	   }
 	
-public static String trimEnd(String value, String... suffixs) {
+    public static String trimEnd(String value, String... suffixs) {
         
         String v = value.trim();
         for (String suffix : suffixs) {
@@ -105,10 +181,22 @@ public static String trimEnd(String value, String... suffixs) {
 		return name.substring(0, 1).toUpperCase()+name.substring(1);
 	}
 
-	private static Gson GSON=new Gson();
-    protected String toJson(Object obj) {
-    	return GSON.toJson(obj);
-    };
-	
+	 protected Map<String,String> toMap(Map<String,String[]> rmap){
+	    	Map<String,String> map=new HashMap<String,String>();
+			for(Iterator<String> it=rmap.keySet().iterator();it.hasNext();) {
+				String rkey=it.next();
+				String[] rvalues=rmap.get(rkey);
+				String value=null;
+				if(rvalues==null) {
+					
+				}else if(rvalues.length==1) {
+					value=rvalues[0];
+				}else {
+					String.join(",", rvalues);
+				}
+				map.put(rkey, value);
+			}
+			return map;
+	    }
 	
 }

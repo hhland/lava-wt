@@ -3,18 +3,14 @@
   <groupId>com.uhealin</groupId>
   <artifactId>lava-wt</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>lava-webutil</name>
+  <name>lava-wt</name>
   
   
   <dependencies>
   
   
-<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-<dependency>
-    <groupId>com.google.code.gson</groupId>
-    <artifactId>gson</artifactId>
-    <version>2.8.5</version>
-</dependency>
+
+
 
 
   
