@@ -18,7 +18,7 @@ public abstract class  ActionTemplate {
 	protected abstract Class<? extends ActionTemplate> thisClass();
 	
 	
-	protected class ResultStruct {
+	protected class ResultStruct<E> {
     	public static final int CODE_EXCEPTION = -1;
     	public static final int CODE_FAIL = 0;
     	public static final int CODE_SUCCESS = 1;
@@ -26,14 +26,18 @@ public abstract class  ActionTemplate {
 		
 		private int code;
 		
+		private E result;
+		
 		private Object[] infos;
 
-		public int getCode() {
-			return code;
+		
+
+		public E getResult() {
+			return result;
 		}
 
-		public void setCode(int code) {
-			this.code = code;
+		public void setResult(E result) {
+			this.result = result;
 		}
 
 		public String getMsg() {
@@ -44,6 +48,16 @@ public abstract class  ActionTemplate {
 			this.msg = msg;
 		}
 		
+		
+
+		public int getCode() {
+			return code;
+		}
+
+		public void setCode(int code) {
+			this.code = code;
+		}
+
 		public boolean isError() {
 			return this.code<=0;
 		}
@@ -60,14 +74,7 @@ public abstract class  ActionTemplate {
     }
 	
 	
-	public static <T> boolean isIn(T obj1, T... objs) {
-		for (T obj : objs) {
-			if (isEquals(obj1, obj)) {
-				return true;
-			}
-		}
-		return false;
-	}
+	
 	
 	
 	public static <T> boolean isEquals(T... objects) {
