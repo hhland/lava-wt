@@ -6,7 +6,7 @@ package lava.wt.adapter;
 
 	
 	
-	protected BaseAdapter(E _this) {
+	public BaseAdapter(E _this) {
 		super();
 		this._this = _this;
 	}

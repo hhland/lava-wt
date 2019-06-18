@@ -1,25 +1,23 @@
 package lava.wt.template;
 
-
-
-
+import lava.wt.pojo.RestModel;
 
 public abstract  class  MDActionTemplate<M> extends ActionTemplate {
 
 	
 	
 
-    
+    protected abstract RestModel<M> getModel();
 
     
 
-    protected abstract M readByPk(Object pk) throws Exception;
+    //protected abstract M readByPk(Object pk) throws Exception;
     
-    protected abstract Object  getPk(M m);
+    //protected abstract Object  getPk(M m);
 
     
 
-    protected abstract int doCreate(M m) throws Exception;
+    //protected abstract int doCreate(M m) throws Exception;
     
     
 
@@ -32,7 +30,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
     protected void onCreateSuccess(M m, ResultStruct re) throws Exception {
     }
 
-    protected abstract int doUpdate(M m) throws Exception;
+    //protected abstract int doUpdate(M m) throws Exception;
 
     protected void onUpdate(M m, M post, ResultStruct re) throws Exception {
     }
@@ -46,7 +44,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
     protected void onReadError(Object pk,ResultStruct re, Exception ex) {
     }
     
-    protected abstract int doDelete(M m) throws Exception;
+    //protected abstract int doDelete(M m) throws Exception;
 
     protected void onDelete(M m, ResultStruct re) throws Exception {
     }
@@ -64,7 +62,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
         try {
             
             onCreate(post, result);
-            int re=doCreate(post);
+            int re=getModel().doCreate(post);
             result.setCode(re);
             onCreateSuccess(post, result);
 
@@ -76,16 +74,16 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
         return result;
     }
 
-    protected final ResultStruct update(M post)  {
-    	
+    protected final ResultStruct update(M post)  { 
+    	RestModel<M> model=getModel();
         ResultStruct result = new ResultStruct();
         M source = null;
-        Object id=getPk(post);
+        Object id=model.getPk(post);
         try {
         	
-            source = readByPk(id);
+            source = model.readByPk(id);
             onUpdate(source, post, result);
-            int re=doUpdate(source);
+            int re=model.doUpdate(source);
             result.setCode(re);
             onUpdateSuccess(source, post, result);
 
@@ -107,7 +105,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
         try {
          
             onDelete(m, result);
-            int re= doDelete(m);
+            int re= getModel().doDelete(m);
             result.setCode(re);
             onDeleteSuccess(m, result);
 
@@ -127,7 +125,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
         M m=null;
         try {
          
-            m=readByPk(pk);
+            m=getModel().readByPk(pk);
             if(m!=null) {
             	result.setInfos(m);
             	result.setCode(ResultStruct.CODE_SUCCESS);
@@ -147,7 +145,7 @@ public abstract  class  MDActionTemplate<M> extends ActionTemplate {
     
 	
 	protected final ResultStruct save(M post) throws Exception {
-    	ResultStruct re=isAllBlank(getPk(post))?create(post):update(post); 
+    	ResultStruct re=isAllBlank(getModel().getPk(post))?create(post):update(post); 
     	return re;
     }
 
