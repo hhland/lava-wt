@@ -8,18 +8,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import lava.wt.pojo.RestModel;
+import lava.wt.pojo.RestModelDriver;
 
-public abstract class RestMDServlet<E> extends HttpServlet{
+public abstract class ModelDriverRestServlet<E> extends HttpServlet{
 
-   abstract	protected RestModel<E> getModel(HttpServletRequest request); 
+   abstract	protected RestModelDriver<E> getModel(HttpServletRequest request); 
    
 	
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		RestModel<E> model=getModel(req);
+		RestModelDriver<E> model=getModel(req);
 		
 		super.doGet(req, resp);
 	}

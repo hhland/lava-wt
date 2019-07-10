@@ -13,17 +13,21 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import lava.wt.pojo.RestResult;
 
 
 
 
 
-public abstract class LSActionTemplate extends ActionTemplate{
+
+public abstract class RowsActionTemplate extends ActionTemplate{
 
 	
-	protected abstract String toString(Date date);
+	
 	protected abstract Map<String,String> getParameterMap(HttpServletRequest request);
 
+	
+	
 
 
     protected abstract int paramStart(HttpServletRequest request);
@@ -35,9 +39,9 @@ public abstract class LSActionTemplate extends ActionTemplate{
    
 
     
-    protected abstract ResultStruct<Integer> xhr_total(HttpServletRequest request) throws IOException;
+    protected abstract RestResult<Integer> xhr_total(HttpServletRequest request) throws IOException;
     
-    protected abstract ResultStruct<String> xhr_rows(HttpServletRequest request) throws IOException;
+    protected abstract RestResult<String> xhr_rows(HttpServletRequest request) throws IOException;
     
     
     

@@ -56,4 +56,9 @@ public class RestResult<E> {
 	}
 	
 	
+	public void from(Exception ex) {
+		this.code=CODE_EXCEPTION;
+		this.msg=ex.getLocalizedMessage();
+	}
+	
 }
